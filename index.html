@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script type="text/javascript" src="src/js/clappr.min.js"></script>
+    <script
+      type="text/javascript"
+      src="src/js/clappr-responsive-container-plugin.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="src/js/clappr-level-selector.min.js"
+    ></script>
+    <script src="src/js/channels.js"></script>
+    <style>
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      body {
+        margin: 0;
+      }
+      .channel {
+        color: rgb(77, 77, 77);
+        height: 70px;
+        background-color: #f2f2f2;
+        margin: 10px;
+        text-align: center;
+        line-height: 70px;
+        cursor: pointer;
+      }
+      #video div {
+        margin: auto;
+      }
+    </style>
+    <title>Smart TV</title>
+  </head>
+  <body>
+    <div id="video"></div>
+    <div id="channels"></div>
+    <script>
+      var player = new Clappr.Player({
+        source: "http://192.168.37.2:1935/bein1/1_adaptive.m3u8",
+        mute: false,
+        autoPlay: true,
+        parentId: "#video",
+        width: "640",
+        height: "360",
+        autoPlay: true,
+        plugins: [LevelSelector],
+        levelSelectorConfig: {
+          title: "Quality",
+          labels: {
+            2: "Very High ", // 500kbps
+            1: "High ", // 240kbps
+            0: "Med " // 120kbps
+          },
+          labelCallback: function(playbackLevel, customLabel) {
+            return customLabel + playbackLevel.level.height + "p"; // High 720p
+          }
+        }
+      });
+
+      function makeChangeStreamCallback(index) {
+        return function() {
+          var url =
+            "http://192.168.37.2:1935/" +
+            channelsJson[index].app +
+            "/" +
+            channelsJson[index].streamname +
+            "_adaptive.m3u8";
+          console.log(url);
+          player.configure({
+            source: url
+          });
+        };
+      }
+      var channelsEl = document.getElementById("channels");
+      for (var i = 0; i < channelsJson.length; i++) {
+        // Create a new channel element
+        var channelEl = document.createElement("div");
+        channelEl.className = "channel";
+        channelEl.innerText = channelsJson[i].title;
+        // Append it to the container
+        channelsEl.appendChild(channelEl);
+        channelEl.addEventListener("click", makeChangeStreamCallback(i));
+      }
+    </script>
+  </body>
+</html>
